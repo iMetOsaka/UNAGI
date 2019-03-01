@@ -1,0 +1,36 @@
+[2018/10/31 - 11:54:58] Reading the input file
+[2018/10/31 - 11:55:22] Reading the input file
+[2018/10/31 - 13:46:49] Reading the input file
+[2018/10/31 - 13:48:33] Reading the input file
+[2018/10/31 - 13:49:23] Reading the input file
+[2018/10/31 - 13:50:12] Reading the input file
+[2018/10/31 - 13:51:05] Reading the input file
+[2018/10/31 - 13:51:42] Reading the input file
+[2018/10/31 - 13:52:20] Reading the input file
+[2018/10/31 - 13:52:56] Reading the input file
+[2018/10/31 - 13:54:34] Reading the input file
+[2018/10/31 - 13:54:35] Finding the forwards reads.
+[2018/10/31 - 13:56:09] Reading the input file
+[2018/10/31 - 13:56:10] Finding the forwards reads.
+[2018/10/31 - 13:58:55] Reading the input file
+[2018/10/31 - 13:58:56] Finding the forwards reads.
+[2018/10/31 - 14:00:23] Reading the input file
+[2018/10/31 - 14:00:24] Finding the forwards reads.
+[2018/10/31 - 14:00:24] 169 forwards reads found
+[2018/10/31 - 14:00:24] Finding the backwards reads.
+[2018/10/31 - 14:00:24] 547 backwards reads found
+[2018/10/31 - 14:00:24] Getting the reverse complement for the backwards reads.
+[2018/10/31 - 14:01:38] Reading the input file
+[2018/10/31 - 14:01:38] Finding the forwards reads.
+[2018/10/31 - 14:01:38] 169 forwards reads found
+[2018/10/31 - 14:01:38] Finding the backwards reads.
+[2018/10/31 - 14:01:38] 547 backwards reads found
+[2018/10/31 - 14:01:38] Getting the reverse complement for the backwards reads.
+[2018/10/31 - 14:01:39] A total of 716 records out of 1000 (72%) were successfully stranded
+[2018/10/31 - 14:04:54] Reading the input file
+[2018/10/31 - 14:04:55] Finding the forwards reads.
+[2018/10/31 - 14:04:55] 169 forwards reads found
+[2018/10/31 - 14:04:55] Finding the backwards reads.
+[2018/10/31 - 14:04:55] 547 backwards reads found
+[2018/10/31 - 14:04:55] Getting the reverse complement for the backwards reads.
+[2018/10/31 - 14:04:55] A total of 716 records out of 1000 (72%) were successfully stranded
