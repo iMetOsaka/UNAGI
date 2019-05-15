@@ -44,15 +44,15 @@ def main(argv):
 		log.tell("The input file %s doesn't exist"%(args.i))
 		return
 	#Check the file format
-	# try:
-	# 	log.tell("Reading the input file")
-	# 	inputRecords = list(SeqIO.parse(inputFile, "fastq"))
-	# except ValueError:
-	# 	log.tell("The input file must be in the fastq format.")
-	# 	return
-	# if len(inputRecords) == 0:
-	# 	log.tell("The input file must be in the fastq format.")
-	# 	return
+	try:
+		log.tell("Reading the input file")
+		inputRecords = list(SeqIO.parse(inputFile, "fastq"))
+	except ValueError:
+		log.tell("The input file must be in the fastq format.")
+		return
+	if len(inputRecords) == 0:
+		log.tell("The input file must be in the fastq format.")
+		return
 
 	#Output
 	outputPath = args.o
@@ -68,12 +68,12 @@ def main(argv):
 
 	#Optional
 	#If the -s option is selected, the stranded file is the input file. Otherwise, it has to be generated
-	# stranding = args.s
-	# if stranding:
-	# 	strandedFile = os.path.join(outputPath,config["stranded_file"])
-	# else:
-	# 	strandedRecords = inputRecords
-	# 	strandedFile = inputFile
+	stranding = args.s
+	if stranding:
+		strandedFile = os.path.join(outputPath,config["stranded_file"])
+	else:
+		strandedRecords = inputRecords
+		strandedFile = inputFile
 
 	#More output should happen if the script runson verbose mode
 	log.verbose = args.v
@@ -82,56 +82,56 @@ def main(argv):
 
 	## UNAGI Pipeline ##
 
-	# if(stranding):
-	# 	log.tell("Finding the different strands in the input reads")
-	# 	#Find the strands if needed
-	# 	strandedRecords = findStrands(inputRecords)
-	# 	#Writing the stranded reads to a fastq file
-	# 	SeqIO.write(strandedRecords, strandedFile, "fastq")
-	# 	log.tell("A total of %i records out of %i (%i%%) were successfully stranded"%(len(strandedRecords), len(inputRecords), round(len(strandedRecords)*100/len(inputRecords))))
-	#
-	# #Cleaing memory of huge variables:
-	# inputRecords=None
-	# del inputRecords
-	# strandedRecords=None
-	# del strandedRecords
-	#
-	# #Map the reads to the genome
-	# log.tell("Mapping the reads to the genome")
-	# minimap(strandedFile, genomeFile, os.path.join(outputPath,config["raw_mapped_sam_file"]))
-	#
-	# #Get a bam file from the results and sort it
-	# log.tell("Sorting the mapped reads")
-	# samToBam(os.path.join(outputPath,config["raw_mapped_sam_file"]),os.path.join(outputPath,config["raw_mapped_bam_file"]))
-	# sortBam(os.path.join(outputPath,config["raw_mapped_bam_file"]),os.path.join(outputPath,config["raw_sorted_bam_file"]))
-	#
-	# #Get the bed file from our first mapping and separating it between positive and negative reads
-	# log.tell("Generating the positive and negative bed files")
-	# bamToBed(os.path.join(outputPath,config["raw_sorted_bam_file"]),os.path.join(outputPath,config["raw_sorted_bed_file"]))
-	# separateBedFile(os.path.join(outputPath,config["raw_sorted_bed_file"]),os.path.join(outputPath,config["positive_bed_file"]),os.path.join(outputPath,config["negative_bed_file"]))
-	#
-	# #Generate a fasta file from each bed file and the full genome
-	# log.tell("Generating fasta files from our bed files and the genome")
-	# bedToFasta(os.path.join(outputPath,config["positive_bed_file"]),genomeFile,os.path.join(outputPath,config["positive_refined_fasta_file"]))
-	# bedToFasta(os.path.join(outputPath,config["negative_bed_file"]),genomeFile,os.path.join(outputPath,config["negative_refined_fasta_file"]))
-	#
-	# #Map the newly created fasta file
-	# log.tell("Mapping the new fasta files to the genome")
-	# minimap(os.path.join(outputPath,config["positive_refined_fasta_file"]), genomeFile, os.path.join(outputPath,config["positive_mapped_sam_file"]))
-	# minimap(os.path.join(outputPath,config["negative_refined_fasta_file"]), genomeFile, os.path.join(outputPath,config["negative_mapped_sam_file"]))
-	#
-	# #Get a sorted bam file from our mapping
-	# log.tell("Sorting the new mapped reads")
-	# samToBam(os.path.join(outputPath,config["positive_mapped_sam_file"]),os.path.join(outputPath,config["positive_mapped_bam_file"]))
-	# samToBam(os.path.join(outputPath,config["negative_mapped_sam_file"]),os.path.join(outputPath,config["negative_mapped_bam_file"]))
-	# sortBam(os.path.join(outputPath,config["positive_mapped_bam_file"]),os.path.join(outputPath,config["positive_sorted_bam_file"]))
-	# sortBam(os.path.join(outputPath,config["negative_mapped_bam_file"]),os.path.join(outputPath,config["negative_sorted_bam_file"]))
-	#
-	# #Get the coverage for each position from our map results
-	# log.tell("Generating the genome coverage for each position")
-	# genomecov(os.path.join(outputPath,config["positive_sorted_bam_file"]),genomeFile,os.path.join(outputPath,config["positive_coverage_file"]))
-	# genomecov(os.path.join(outputPath,config["negative_sorted_bam_file"]),genomeFile,os.path.join(outputPath,config["negative_coverage_file"]))
-	#
+	if(stranding):
+		log.tell("Finding the different strands in the input reads")
+		#Find the strands if needed
+		strandedRecords = findStrands(inputRecords)
+		#Writing the stranded reads to a fastq file
+		SeqIO.write(strandedRecords, strandedFile, "fastq")
+		log.tell("A total of %i records out of %i (%i%%) were successfully stranded"%(len(strandedRecords), len(inputRecords), round(len(strandedRecords)*100/len(inputRecords))))
+
+	#Cleaing memory of huge variables:
+	inputRecords=None
+	del inputRecords
+	strandedRecords=None
+	del strandedRecords
+
+	#Map the reads to the genome
+	log.tell("Mapping the reads to the genome")
+	minimap(strandedFile, genomeFile, os.path.join(outputPath,config["raw_mapped_sam_file"]))
+
+	#Get a bam file from the results and sort it
+	log.tell("Sorting the mapped reads")
+	samToBam(os.path.join(outputPath,config["raw_mapped_sam_file"]),os.path.join(outputPath,config["raw_mapped_bam_file"]))
+	sortBam(os.path.join(outputPath,config["raw_mapped_bam_file"]),os.path.join(outputPath,config["raw_sorted_bam_file"]))
+
+	#Get the bed file from our first mapping and separating it between positive and negative reads
+	log.tell("Generating the positive and negative bed files")
+	bamToBed(os.path.join(outputPath,config["raw_sorted_bam_file"]),os.path.join(outputPath,config["raw_sorted_bed_file"]))
+	separateBedFile(os.path.join(outputPath,config["raw_sorted_bed_file"]),os.path.join(outputPath,config["positive_bed_file"]),os.path.join(outputPath,config["negative_bed_file"]))
+
+	#Generate a fasta file from each bed file and the full genome
+	log.tell("Generating fasta files from our bed files and the genome")
+	bedToFasta(os.path.join(outputPath,config["positive_bed_file"]),genomeFile,os.path.join(outputPath,config["positive_refined_fasta_file"]))
+	bedToFasta(os.path.join(outputPath,config["negative_bed_file"]),genomeFile,os.path.join(outputPath,config["negative_refined_fasta_file"]))
+
+	#Map the newly created fasta file
+	log.tell("Mapping the new fasta files to the genome")
+	minimap(os.path.join(outputPath,config["positive_refined_fasta_file"]), genomeFile, os.path.join(outputPath,config["positive_mapped_sam_file"]))
+	minimap(os.path.join(outputPath,config["negative_refined_fasta_file"]), genomeFile, os.path.join(outputPath,config["negative_mapped_sam_file"]))
+
+	#Get a sorted bam file from our mapping
+	log.tell("Sorting the new mapped reads")
+	samToBam(os.path.join(outputPath,config["positive_mapped_sam_file"]),os.path.join(outputPath,config["positive_mapped_bam_file"]))
+	samToBam(os.path.join(outputPath,config["negative_mapped_sam_file"]),os.path.join(outputPath,config["negative_mapped_bam_file"]))
+	sortBam(os.path.join(outputPath,config["positive_mapped_bam_file"]),os.path.join(outputPath,config["positive_sorted_bam_file"]))
+	sortBam(os.path.join(outputPath,config["negative_mapped_bam_file"]),os.path.join(outputPath,config["negative_sorted_bam_file"]))
+
+	#Get the coverage for each position from our map results
+	log.tell("Generating the genome coverage for each position")
+	genomecov(os.path.join(outputPath,config["positive_sorted_bam_file"]),genomeFile,os.path.join(outputPath,config["positive_coverage_file"]))
+	genomecov(os.path.join(outputPath,config["negative_sorted_bam_file"]),genomeFile,os.path.join(outputPath,config["negative_coverage_file"]))
+
 	#Determine genes start and end positions from the coverage, store the lists in variable for later use
 	log.tell("Determining genes start and end positions from the coverage")
 	positiveChrList = findCoverageBreaks(os.path.join(outputPath,config["positive_coverage_file"]),os.path.join(outputPath,config["positive_genelist_incomplete_file"]),"+")
