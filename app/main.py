@@ -57,8 +57,13 @@ def main(argv):
 	#Output
 	outputPath = args.o
 	if not os.path.isdir(outputPath):
-		log.tell("The output directory %s doesn't exist"%(args.o))
-		return
+		log.tell("The output directory %s doesn't exist, creating it")
+		os.mkdir(transitionnalOutputPath)
+
+	transitionnalOutputPath=os.path.join(outputPath,"transitionnal")
+	if not os.path.isdir(transitionnalOutputPath):
+		os.mkdir(transitionnalOutputPath)
+		
 
 	#Genome
 	genomeFile = args.g
@@ -70,7 +75,7 @@ def main(argv):
 	#If the -s option is selected, the stranded file is the input file. Otherwise, it has to be generated
 	stranding = args.s
 	if stranding:
-		strandedFile = os.path.join(outputPath,config["stranded_file"])
+		strandedFile = os.path.join(transitionnalOutputPath,config["stranded_file"])
 	else:
 		strandedRecords = inputRecords
 		strandedFile = inputFile
@@ -98,63 +103,75 @@ def main(argv):
 
 	#Map the reads to the genome
 	log.tell("Mapping the reads to the genome")
-	minimap(strandedFile, genomeFile, os.path.join(outputPath,config["raw_mapped_sam_file"]))
+	minimap(strandedFile, genomeFile, os.path.join(transitionnalOutputPath,config["raw_mapped_sam_file"]))
 
 	#Get a bam file from the results and sort it
 	log.tell("Sorting the mapped reads")
-	samToBam(os.path.join(outputPath,config["raw_mapped_sam_file"]),os.path.join(outputPath,config["raw_mapped_bam_file"]))
-	sortBam(os.path.join(outputPath,config["raw_mapped_bam_file"]),os.path.join(outputPath,config["raw_sorted_bam_file"]))
+	samToBam(os.path.join(transitionnalOutputPath,config["raw_mapped_sam_file"]),os.path.join(transitionnalOutputPath,config["raw_mapped_bam_file"]))
+	sortBam(os.path.join(transitionnalOutputPath,config["raw_mapped_bam_file"]),os.path.join(transitionnalOutputPath,config["raw_sorted_bam_file"]))
 
 	#Get the bed file from our first mapping and separating it between positive and negative reads
 	log.tell("Generating the positive and negative bed files")
-	bamToBed(os.path.join(outputPath,config["raw_sorted_bam_file"]),os.path.join(outputPath,config["raw_sorted_bed_file"]))
-	separateBedFile(os.path.join(outputPath,config["raw_sorted_bed_file"]),os.path.join(outputPath,config["positive_bed_file"]),os.path.join(outputPath,config["negative_bed_file"]))
+	bamToBed(os.path.join(transitionnalOutputPath,config["raw_sorted_bam_file"]),os.path.join(transitionnalOutputPath,config["raw_sorted_bed_file"]))
+	bamToBed(os.path.join(transitionnalOutputPath,config["raw_sorted_bam_file"]),os.path.join(transitionnalOutputPath,config["raw_sorted_split_bed_file"]),split=True)
+	separateBedFile(os.path.join(transitionnalOutputPath,config["raw_sorted_bed_file"]),os.path.join(transitionnalOutputPath,config["positive_bed_file"]),os.path.join(transitionnalOutputPath,config["negative_bed_file"]))
 
 	#Generate a fasta file from each bed file and the full genome
 	log.tell("Generating fasta files from our bed files and the genome")
-	bedToFasta(os.path.join(outputPath,config["positive_bed_file"]),genomeFile,os.path.join(outputPath,config["positive_refined_fasta_file"]))
-	bedToFasta(os.path.join(outputPath,config["negative_bed_file"]),genomeFile,os.path.join(outputPath,config["negative_refined_fasta_file"]))
+	bedToFasta(os.path.join(transitionnalOutputPath,config["positive_bed_file"]),genomeFile,os.path.join(transitionnalOutputPath,config["positive_refined_fasta_file"]))
+	bedToFasta(os.path.join(transitionnalOutputPath,config["negative_bed_file"]),genomeFile,os.path.join(transitionnalOutputPath,config["negative_refined_fasta_file"]))
 
 	#Map the newly created fasta file
 	log.tell("Mapping the new fasta files to the genome")
-	minimap(os.path.join(outputPath,config["positive_refined_fasta_file"]), genomeFile, os.path.join(outputPath,config["positive_mapped_sam_file"]))
-	minimap(os.path.join(outputPath,config["negative_refined_fasta_file"]), genomeFile, os.path.join(outputPath,config["negative_mapped_sam_file"]))
+	minimap(os.path.join(transitionnalOutputPath,config["positive_refined_fasta_file"]), genomeFile, os.path.join(transitionnalOutputPath,config["positive_mapped_sam_file"]))
+	minimap(os.path.join(transitionnalOutputPath,config["negative_refined_fasta_file"]), genomeFile, os.path.join(transitionnalOutputPath,config["negative_mapped_sam_file"]))
 
 	#Get a sorted bam file from our mapping
 	log.tell("Sorting the new mapped reads")
-	samToBam(os.path.join(outputPath,config["positive_mapped_sam_file"]),os.path.join(outputPath,config["positive_mapped_bam_file"]))
-	samToBam(os.path.join(outputPath,config["negative_mapped_sam_file"]),os.path.join(outputPath,config["negative_mapped_bam_file"]))
-	sortBam(os.path.join(outputPath,config["positive_mapped_bam_file"]),os.path.join(outputPath,config["positive_sorted_bam_file"]))
-	sortBam(os.path.join(outputPath,config["negative_mapped_bam_file"]),os.path.join(outputPath,config["negative_sorted_bam_file"]))
+	samToBam(os.path.join(transitionnalOutputPath,config["positive_mapped_sam_file"]),os.path.join(transitionnalOutputPath,config["positive_mapped_bam_file"]))
+	samToBam(os.path.join(transitionnalOutputPath,config["negative_mapped_sam_file"]),os.path.join(transitionnalOutputPath,config["negative_mapped_bam_file"]))
+	sortBam(os.path.join(transitionnalOutputPath,config["positive_mapped_bam_file"]),os.path.join(transitionnalOutputPath,config["positive_sorted_bam_file"]))
+	sortBam(os.path.join(transitionnalOutputPath,config["negative_mapped_bam_file"]),os.path.join(transitionnalOutputPath,config["negative_sorted_bam_file"]))
 
 	#Get the coverage for each position from our map results
 	log.tell("Generating the genome coverage for each position")
-	genomecov(os.path.join(outputPath,config["positive_sorted_bam_file"]),genomeFile,os.path.join(outputPath,config["positive_coverage_file"]))
-	genomecov(os.path.join(outputPath,config["negative_sorted_bam_file"]),genomeFile,os.path.join(outputPath,config["negative_coverage_file"]))
+	genomecov(os.path.join(transitionnalOutputPath,config["positive_sorted_bam_file"]),genomeFile,os.path.join(transitionnalOutputPath,config["positive_coverage_file"]))
+	genomecov(os.path.join(transitionnalOutputPath,config["negative_sorted_bam_file"]),genomeFile,os.path.join(transitionnalOutputPath,config["negative_coverage_file"]))
+	combineCoverage(os.path.join(transitionnalOutputPath,config["positive_coverage_file"]),os.path.join(transitionnalOutputPath,config["negative_coverage_file"]),os.path.join(transitionnalOutputPath,config["total_coverage_file"]))
 
 	#Determine genes start and end positions from the coverage, store the lists in variable for later use
 	log.tell("Determining genes start and end positions from the coverage")
-	positiveChrList = findCoverageBreaks(os.path.join(outputPath,config["positive_coverage_file"]),os.path.join(outputPath,config["positive_genelist_incomplete_file"]),"+")
-	negativeChrList = findCoverageBreaks(os.path.join(outputPath,config["negative_coverage_file"]),os.path.join(outputPath,config["negative_genelist_incomplete_file"]),"-")
+	positiveChrList = findCoverageBreaks(os.path.join(transitionnalOutputPath,config["positive_coverage_file"]),os.path.join(transitionnalOutputPath,config["positive_genelist_incomplete_file"]),"+")
+	negativeChrList = findCoverageBreaks(os.path.join(transitionnalOutputPath,config["negative_coverage_file"]),os.path.join(transitionnalOutputPath,config["negative_genelist_incomplete_file"]),"-")
 
 	#Determine genes end positions from 3' coverage
 	log.tell("Determining genes end positions from 3' coverage")
-	genomecov3dash(os.path.join(outputPath,config["positive_sorted_bam_file"]),os.path.join(outputPath,config["positive_3dash_file"]))
-	genomecov3dash(os.path.join(outputPath,config["negative_sorted_bam_file"]),os.path.join(outputPath,config["negative_3dash_file"]))
+	genomecov3dash(os.path.join(transitionnalOutputPath,config["positive_sorted_bam_file"]),os.path.join(transitionnalOutputPath,config["positive_3dash_file"]))
+	genomecov3dash(os.path.join(transitionnalOutputPath,config["negative_sorted_bam_file"]),os.path.join(transitionnalOutputPath,config["negative_3dash_file"]))
 
 	#Determine genes start positions from 5' coverage
 	log.tell("Determining genes start positions from 5' coverage")
-	genomecov5dash(os.path.join(outputPath,config["positive_sorted_bam_file"]),os.path.join(outputPath,config["positive_5dash_file"]))
-	genomecov5dash(os.path.join(outputPath,config["negative_sorted_bam_file"]),os.path.join(outputPath,config["negative_5dash_file"]))
+	genomecov5dash(os.path.join(transitionnalOutputPath,config["positive_sorted_bam_file"]),os.path.join(transitionnalOutputPath,config["positive_5dash_file"]))
+	genomecov5dash(os.path.join(transitionnalOutputPath,config["negative_sorted_bam_file"]),os.path.join(transitionnalOutputPath,config["negative_5dash_file"]))
 
 	#Intersect genes start and end positions from the coverage analysis and cuts to refine our analysis
 	log.tell("Intersecting genes start and end positions from the coverage analysis and cuts")
-	positiveChrList = insertDashCuts(os.path.join(outputPath,config["positive_3dash_file"]), os.path.join(outputPath,config["positive_5dash_file"]), positiveChrList, os.path.join(outputPath,config["positive_genelist_file"]), "+")
-	negativeChrList = insertDashCuts(os.path.join(outputPath,config["negative_3dash_file"]), os.path.join(outputPath,config["negative_5dash_file"]), negativeChrList, os.path.join(outputPath,config["negative_genelist_file"]), "-")
+	positiveChrList = insertDashCuts(os.path.join(transitionnalOutputPath,config["positive_3dash_file"]), os.path.join(transitionnalOutputPath,config["positive_5dash_file"]), positiveChrList, os.path.join(transitionnalOutputPath,config["positive_genelist_file"]), "+")
+	negativeChrList = insertDashCuts(os.path.join(transitionnalOutputPath,config["negative_3dash_file"]), os.path.join(transitionnalOutputPath,config["negative_5dash_file"]), negativeChrList, os.path.join(transitionnalOutputPath,config["negative_genelist_file"]), "-")
 
 	#Combining the results
 	log.tell("Combining the results in a single file")
 	combineChrLists(positiveChrList,negativeChrList,os.path.join(outputPath,config["full_genelist_file"]))
+
+	#Finding splicing isomorphs
+	log.tell("Finding splincing isomorphs")
+	findSpliceSites(os.path.join(transitionnalOutputPath,config["raw_sorted_split_bed_file"]),os.path.join(transitionnalOutputPath,config["raw_splice_sites_file"]))
+	filterByCoverage(os.path.join(transitionnalOutputPath,config["raw_splice_sites_file"]),os.path.join(transitionnalOutputPath,config["total_coverage_file"]),os.path.join(transitionnalOutputPath,config["coverage_filtered_splice_sites_file"]))
+	filterByGenome(os.path.join(transitionnalOutputPath,config["coverage_filtered_splice_sites_file"]),genomeFile,os.path.join(outputPath,config["genome_filtered_splice_sites_file"]))
+	#split_dup_v2 --> To select the highest frequency splice site in case of duplicates
+	# --> Splicing isoforms
+
+	# --> UTR Isoforms
 
 	#End message
 	log.tell("The full gene list has been generated at: %s"%(os.path.join(outputPath,config["full_genelist_file"])))
@@ -391,6 +408,207 @@ def combineChrLists(chrList1, chrList2, outputFile):
 
 	log.write("Combining: Found %i chromosomes and %i genes total."%(len(mergedChrList),geneNumber))
 
+# Find splice sites in a bed file created with the -split option
+def findSpliceSites(sourceFile, outputFile):
+	#read the file and compare each line with its neighbours
+	with open(sourceFile, "r") as bedFile:
+		firstline=True
+		lastline=None
+		exons=[]
+		splicedTranscirpts=[]
+		for line in bedFile:
+			#Seach for duplicated instances of reads in the split file (split sites) by comparing their names
+			currentline=line.strip().split("\t")
+			if lastline != None and lastline[3] == currentline[3]:
+				if firstline:
+					exons.append(lastline)
+					firstline=False
+				exons.append(currentline)
+			else:
+				#If we found a duplicate, then we add it to the list along with its splice sites
+				if not firstline:
+					splicedTranscirpts.append(getSplicedTranscript(exons))
+				#When a new read name is found, reinitialize the variables
+				exons=[]
+				firstline=True
+			lastline=currentline
+
+		#If the last lines were a duplicate, then we add it to the list along with its splice sites
+		if not firstline:
+			splicedTranscirpts.append(getSplicedTranscript(exons))
+
+	#sort our duplicate list by key, then by chromosome name for later manipulation
+	splicedTranscirpts.sort(key=lambda transcript: transcript[3])
+	splicedTranscirpts.sort(key=lambda transcript: transcript[0])
+
+	#Keep only the transcripts with at least 3
+	isomorphs=[]
+	currentIsomorph=[]
+	firstline=True
+	lastSpliceSites=None
+	for transcript in splicedTranscirpts:
+		spliceSites = " ".join(transcript[3])
+		if spliceSites == lastSpliceSites:
+			currentIsomorph.append(transcript)
+		else:
+			if firstline:
+				firstline=False
+			else:
+				#Add the isomorph to the list if there are at least 3 instances of it
+				if len(currentIsomorph) > 2:
+					isomorphs.append(getIsomorph(currentIsomorph))
+
+			currentIsomorph=[transcript]
+		lastSpliceSites=spliceSites
+
+
+	with open(outputFile, "w") as outFile:
+		for transcript in isomorphs:
+			outFile.write("%s\t%i\t%i\t%i\t%s\n"%(transcript[0],transcript[1],transcript[2],transcript[3],"\t".join(transcript[4])))
+
+def getIsomorph(transcripts):
+	if len(transcripts)<=0:
+		return["",0,0,0,[]]
+	start=0
+	end=0
+	for transcript in transcripts:
+		#the first part of each transcript should be the same chromosome name
+		chr = transcript[0]
+		#the final start and end positions will be the mean of all start and end positions, respectively
+		start+=int(transcript[1])
+		end+=int(transcript[2])
+		#the last part of each transcript should be the same splice sites
+		spliceSites=transcript[3]
+
+	return [chr,start/len(transcripts),end/len(transcripts),len(transcripts)-1,spliceSites]
+
+def getSplicedTranscript(exons):
+	start=None
+	lastexon=None
+	spliceSites=[]
+	for exon in exons:
+		#the first part of each read should be the same chromosome name
+		chr = exon[0]
+		#the end position of the previous exon is the start of a splice site
+		if lastexon is not None:
+			spliceSites.append(lastexon[2])
+		#the start position of the first exon should be the start of the transcript
+		if start is None:
+			start = exon[1]
+		#the start position of the other exons are the end of splice sites
+		else:
+			spliceSites.append(exon[1])
+		lastexon=exon
+	#the remaining end position at the end of the loop is the end of the transcript
+	end=lastexon[2]
+	return [chr,start,end,spliceSites]
+
+#Filters isomorphs, removing the ones that are not represented enough compared to the coverage
+def filterByCoverage(rawIsomorphFile,coverageFile,filteredIsomorphFile):
+	global config
+
+	coverageMap = {}
+	currentChr=None
+	#Read the fill coverage file for quick access
+	with open(coverageFile,'r') as coverage:
+		for line in coverage:
+			chr, position, value=line.strip().split("\t")
+			if chr != currentChr:
+				coverageMap[chr]=[None] #the position 0 does not exist in the coverage file, so we fill it with None
+				currentChr=chr
+			coverageMap[chr].append(int(value))
+
+	#Check the coverage at every splice position
+	with open(rawIsomorphFile,'r') as rawIsomophs:
+		with open(filteredIsomorphFile,'w') as filteredIsomorphs:
+			for line in rawIsomophs:
+				parts = line.strip().split("\t")
+				chr=parts[0]
+				readCount=int(parts[3])
+				spliceSites=parts[4:]
+				valid=False
+				for spliceSite in spliceSites:
+					valid = valid or coverageMap[chr][int(spliceSite)] / readCount < int(config["max_coverage_to_splice_ratio"])
+				if valid:
+					filteredIsomorphs.write(line)
+
+#Filters isomorphs, removing the ones that are not represented enough compared to the coverage
+def filterByGenome(rawIsomorphFile,genomeFile,filteredIsomorphFile):
+	global config
+
+	genomeMap = {}
+	currentChr=None
+	#Read the fill genome file for quick access
+	with open(genomeFile,'r') as genome:
+		for line in genome:
+			if line[0]==">":
+				parts=line.strip().split(" ")
+				chr=parts[0][1:]
+				if chr != currentChr:
+					genomeMap[chr]=""
+				currentChr=chr
+			else:
+				genomeMap[currentChr]+=line.strip().upper()
+
+	#Check the genome for poly-A and poly-T content within each exon and delete the exon if it is found
+	with open(rawIsomorphFile,'r') as rawIsomophs:
+		with open(filteredIsomorphFile,'w') as filteredIsomorphs:
+			for line in rawIsomophs:
+				parts = line.strip().split("\t")
+				chr=parts[0]
+				start=parts[1]
+				end=parts[2]
+				readCount=parts[3]
+				spliceSites=parts[4:]
+				#Translate the splice sites into exon addresses
+				exons=[]
+				exon=[start,None]
+				for spliceSite in spliceSites:
+					if exon is None:
+						exon=[spliceSite,None]
+					else:
+						exon[1]=spliceSite
+						exons.append(exon)
+						exon=None
+				exon[1]=end
+				exons.append(exon)
+
+				#Look for poly-A, poly-T or suspiciously high A or T count in the exon
+				spliceSites=[]
+				start=None
+				for	exon in exons:
+					sequence=genomeMap[chr][int(exon[0]):int(exon[1])]
+					polyA="A" * int(config["max_polyA_length"])
+					polyT="T" * int(config["max_polyA_length"])
+					if len(sequence) < int(config["min_exon_length"]) or polyA in sequence or polyT in sequence or sequence.count('A')/len(sequence) > float(config["max_single_base_to_length_ratio"]) or sequence.count('T')/len(sequence) > float(config["max_single_base_to_length_ratio"]):
+						pass
+					else:
+						if start is None:
+							start=exon[0]
+						else:
+							spliceSites.append(exon[0])
+						spliceSites.append(exon[1])
+				if len(spliceSites) > 2:
+					end=spliceSites.pop()
+					filteredIsomorphs.write("\t".join((chr,start,end,readCount,"\t".join(spliceSites)))+"\n")
+
+
+#Combines two coverage files for the same chromosomes and adds their coverage together
+def combineCoverage(positiveCoverageFile,negativeCoverageFile,allCoverageFile):
+	with open(positiveCoverageFile, "r") as positive:
+		with open(negativeCoverageFile, "r") as negative:
+			with open(allCoverageFile, "w") as all:
+				for posline in positive:
+					negline=next(negative)
+					posparts=posline.split("\t")
+					negparts=posline.split("\t")
+					if posparts[0] == negparts[0] and posparts[1] == negparts[1]:
+						total=int(posparts[2])+int(negparts[2])
+						all.write("%s\t%s\t%i\n"%(posparts[0],posparts[1],total))
+
+
+
+
 ## Command line functions ##
 
 #These functions all call a tool through command line (subprocess) and wait for it to finish
@@ -414,10 +632,13 @@ def samToBam(sourceFile, outputFile):
 	process.wait()
 	log.write("Finished running samtools")
 
-def bamToBed(sourceFile, outputFile):
+def bamToBed(sourceFile, outputFile, split=False):
 	global config
 	global log
-	command=config["bedtools_path"]+" "+config["bamtobed_options"]+" "+sourceFile+" > "+outputFile
+	if split:
+		command=config["bedtools_path"]+" "+config["bamtobed_split_options"]+" "+sourceFile+" > "+outputFile
+	else:
+		command=config["bedtools_path"]+" "+config["bamtobed_options"]+" "+sourceFile+" > "+outputFile
 	log.write("Running bedtools with the following command: "+command)
 	process = subprocess.Popen(command, shell=True)
 	process.wait()
