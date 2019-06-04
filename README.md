@@ -110,7 +110,7 @@ Runs silently (no console output), cancels verbose.
 
 More granular configuration can be made through the conf.ini file located in the app folder.
 
-##Path to Utilities
+### Path to Utilities
 
 These options are the path to the other programs used by UNAGI to deliver its results.
 They come prepackaged with the pipeline but can be replaced by other versions by changing their path in the conf.ini file.
@@ -120,7 +120,7 @@ samtools_path
 bedtools_path
 ```
 
-##Research options
+### Research options
 
 These options are diverse variables that are used by UNAGI to detect or filter its results.
 They are optimized for our research in wheat but can be tweaked in the conf.ini file to adapt for other types of genomes.
@@ -186,7 +186,7 @@ max_splice_difference=10
 ```
 This is used when looking for the best isoform of the same gene. Two isoforms will be considered the same if their splice site either starts or ends within max_splice_difference of each other.
 
-##Command options
+### Command options
 
 These options are the command line options used when running the tools packaged with UNAGI.
 As changing options can change the output of a command and make it incompatible with the next step, caution is recommended when altering these options.
@@ -204,53 +204,133 @@ genomecov5dash_options=genomecov -dz -5
 ```
 
 
-##Transitional output names
+### Transitional output names
 
 These options are the names of the transitional files created throughout a run of the UNAGI pipeline.
 They can be changed freely as it won't impact the run.
 
+**Stranding**
 ```
 stranded_file=stranded.fastq
+```
+The fastq file created after stranding the reads. This will be ignored if the user provides an already stranded file using the -s option.
+
+**Transcript Detection**
+```
 raw_mapped_sam_file=raw_mapped.sam
 raw_mapped_bam_file=raw_mapped.bam
+```
+The sam file obtained by mapping the stranded file to the genome and its bam file conversion.
+
+```
 raw_sorted_bam_file=raw_sorted.bam
+```
+The sorted bam file obtained from the mapped files above.
+
+```
 raw_sorted_bed_file=raw_sorted.bed
+```
+The bed file obtained from the bam file above. It contains the positions of the start and end site of each read.
+
+```
 raw_sorted_split_bed_file=raw_sorted_split.bed
+```
+Another bed file obtained from the bam file above. It contains the positions of the start and end site of each exon for each read
+
+
+```
 positive_bed_file=positive.bed
 negative_bed_file=negative.bed
+```
+The contents of raw_sorted_bed_file separated in positive and negative reads.
+
+```
 positive_refined_fasta_file=positive.fasta
 negative_refined_fasta_file=negative.fasta
+```
+Two fasta files created by taking the positions from the bed files and using the genome file to fill their sequences.
+
+```
 positive_mapped_sam_file=positive_mapped.sam
 negative_mapped_sam_file=negative_mapped.sam
 positive_mapped_bam_file=positive_mapped.bam
 negative_mapped_bam_file=negative_mapped.bam
+```
+Two sam files obtained by mapping the fasta files above to the genome and their bam conversions.
+
+```
 positive_sorted_bam_file=positive_sorted.bam
 negative_sorted_bam_file=negative_sorted.bam
+```
+The sorted bam files obtained from the files above.
+
+```
 positive_coverage_file=positive_coverage.txt
 negative_coverage_file=negative_coverage.txt
 total_coverage_file=total_coverage.txt
+```
+The coverage of each position of each gene obtained from the sorted bam files above. total_coverage_file contains the cumulative coverage for each position.
+
+```
 positive_genelist_incomplete_file=positive_genelist_incomplete.bed
 negative_genelist_incomplete_file=negative_genelist_incomplete.bed
+```
+The gene lists obtained by searching for coverage breaks.
+
+```
 positive_3dash_file=positive_3dash_positions.txt
 negative_3dash_file=negative_3dash_positions.txt
 positive_5dash_file=positive_5dash_positions.txt
 negative_5dash_file=negative_5dash_positions.txt
+```
+Files containing the positions of each 3/ and 5/ sites from the reads in positive_sorted_bam_file and negative_sorted_bam_file
+
+```
 positive_genelist_file=positive_genelist.bed
 negative_genelist_file=negative_genelist.bed
+```
+The gene lists obtained by cutting the gene lists above using the 3/ and 5/ positions.
+
+**Splice Isoforms Detection**
+```
 raw_splice_sites_file=raw_splice_sites.txt
+```
+A file containing the reads with their splice sites using the exons found in raw_sorted_split_bed_file above
+
+```
 coverage_filtered_splice_sites_file=coverage_filtered_splice_sites.txt
+```
+The file obtained by filtering the reads list above using the coverage generated in total_coverage_file above
+
+```
 genome_filtered_splice_sites_file=genome_filtered_splice_sites.txt
+```
+The file obtained by filtering the reads list above using the genome file to remove very short exons consisting almost exclusively of A or T bases.
+
+```
 best_filtered_splice_sites_file=best_filtered_splice_sites.txt
 ```
+The result of extracting only the best isoforms for each gene.
 
-##Final output names
+### Final output names
 
 These options are the names of the final output files of the UNAGI pipeline.
 They can be changed freely as it won't impact the run.
 
 ```
 full_genelist_file=Full_Genelist.bed
-final_splice_sites_file=Splicing_Isoforms.bed
-final_unique_splice_sites_file=Splicing_Isoforms_Unique.bed
+```
+The full list of genes found by UNAGI. This is the combination of positive_genelist_file and negative_genelist_file.
+It is given in the simplified bed format.
 
 ```
+final_splice_sites_file=Splicing_Isoforms.bed
+```
+The full list of splicing isoforms found by UNAGI.
+It is given in the full bed format.
+
+```
+final_unique_splice_sites_file=Splicing_Isoforms_Unique.bed
+```
+The list of the best splicing isoforms found by UNAGI for each gene.
+It is given in the full bed format.
