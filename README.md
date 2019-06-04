@@ -3,6 +3,7 @@
 UNAGI (UNAnnotated Gene Identifier) is a pipeline allowing for the detection and annotation of transcripts from long-read sequences (usually from Oxford Nanopore Technologies Sequencers) with the help of a genome file from the studied organism.
 
 It will typically be used as follows
+
 On Linux:
 ```
 $ ./unagi -i [path_to_fastq_file] -o [path_to_desired_output] -g [path_to_genome_file]
@@ -14,19 +15,26 @@ On Windows:
 ```
 
 The results are classified between transitional files in their own folder and final files.
+
 Final files are the main results. They are presented in the bed format.
+
 Transitional files are the files generated throughout the pipeline run. They can be in different formats and will be discussed in details in the "Detailed Configuration" part of this document.
+
 
 # Installation
 
-UNAGI requires python and BioPython to run. It was tested using python3 but should run with python 2.7 as well.
+UNAGI requires python and BioPython to run.
+
+It was tested using python3 but should run with python 2.7 as well.
 
 ## Test if python is present on your system
+
 You can check if python is already on your system by typing the following command in your command line
 ```
 $ python3 --version
 ```
-If you get a version number, you can skip to installing BioPython
+If you get a version number, you can skip to installing BioPython.
+
 Otherwise you will have to install python using one of the following methods depending on your OS.
 
 ### On Ubuntu
@@ -43,6 +51,7 @@ $ sudo yum install python3
 ```
 ### On Windows
 Download the installer from [the official python download page](https://www.python.org/downloads/windows/) and run it.
+
 Be sure to check the option "Add python.exe to Path" during the installation.
 
 ## Install BioPython
@@ -69,6 +78,7 @@ cd /path/to/unagi/directory
 # Options
 
 **Required**
+
 `-i` *or* `--input`
 Input file. This should be the path to a fastq file.
 
@@ -79,11 +89,13 @@ Output path. This should be the path to output the result files to.
 Genome File. This should be a valid genome file for minimap.
 
 **Optional**
+
 `-v` *or* `--version`
 Displays the program version and exits.
 
 `-s` *or* `--stranded`
 Stranded. Should be selected if the input file contains reads that are already stranded.
+
 The input file should then be the fastq file containing the stranded reads
 
 `-V` *or* `--verbose`
