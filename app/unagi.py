@@ -17,19 +17,23 @@ import conf
 #Global options
 log=logger()
 config=conf.getconf()
+version="v1.0"
 
 def main(argv):
 	global log
 	global config
+	global version
 	## Arguments definition ##
-	parser = argparse.ArgumentParser("A pipeline finding the genes position from Nanopore reads and the genome they belong to.")
-	parser.add_argument('-i', help='Input file. This should be the path to a fastq file.', required=True)
-	parser.add_argument('-o', help='Output path. This should be the path to output our data.', required=True)
-	parser.add_argument('-g', help='Genome File. This should be a valid genome file for minimap.', required=True)
-	parser.add_argument('-s', help='Stranding. Should be selected if the input file contains reads that need stranding.', action='store_true', required=False)
-	parser.add_argument('-v', help='Verbose. Display additional information', action='store_true', required=False)
-	parser.add_argument('-si', help='Runs silently, cancels verbose.', action='store_true', required=False)
+	parser = argparse.ArgumentParser("UNAGI pipeline.")
+	parser.add_argument('-v', '--version', action='version', version="%(prog)s ("+version+")")
+	parser.add_argument('-i', '--input', help='Input file. This should be the path to a fastq file.', required=True)
+	parser.add_argument('-o', '--output', help='Output path. This should be the path to output the result files to.', required=True)
+	parser.add_argument('-g', '--genome', help='Genome File. This should be a valid genome file for minimap.', required=True)
+	parser.add_argument('-s', '--stranded', help='Stranded. Should be selected if the input file contains reads that are already stranded.', action='store_true', required=False)
+	parser.add_argument('-V', '--verbose', help='Verbose. Displays additional information while running.', action='store_true', required=False)
+	parser.add_argument('-S', '--silent', help='Runs silently (no console output), cancels verbose.', action='store_true', required=False)
 	args = parser.parse_args(argv)
+
 
 	#Config file check
 	if config == None:
@@ -63,7 +67,7 @@ def main(argv):
 	transitionnalOutputPath=os.path.join(outputPath,"transitionnal")
 	if not os.path.isdir(transitionnalOutputPath):
 		os.mkdir(transitionnalOutputPath)
-		
+
 
 	#Genome
 	genomeFile = args.g
@@ -73,7 +77,7 @@ def main(argv):
 
 	#Optional
 	#If the -s option is selected, the stranded file is the input file. Otherwise, it has to be generated
-	stranding = args.s
+	stranding = not args.s
 	if stranding:
 		strandedFile = os.path.join(transitionnalOutputPath,config["stranded_file"])
 	else:
@@ -163,14 +167,16 @@ def main(argv):
 	log.tell("Combining the results in a single file")
 	combineChrLists(positiveChrList,negativeChrList,os.path.join(outputPath,config["full_genelist_file"]))
 
-	#Finding splicing isomorphs
-	log.tell("Finding splincing isomorphs")
+	#Finding splicing isoforms
+	log.tell("Finding splincing isoforms")
 	findSpliceSites(os.path.join(transitionnalOutputPath,config["raw_sorted_split_bed_file"]),os.path.join(transitionnalOutputPath,config["raw_splice_sites_file"]))
 	filterByCoverage(os.path.join(transitionnalOutputPath,config["raw_splice_sites_file"]),os.path.join(transitionnalOutputPath,config["total_coverage_file"]),os.path.join(transitionnalOutputPath,config["coverage_filtered_splice_sites_file"]))
-	filterByGenome(os.path.join(transitionnalOutputPath,config["coverage_filtered_splice_sites_file"]),genomeFile,os.path.join(outputPath,config["genome_filtered_splice_sites_file"]))
-	#split_dup_v2 --> To select the highest frequency splice site in case of duplicates
-	# --> Splicing isoforms
-
+	filterByGenome(os.path.join(transitionnalOutputPath,config["coverage_filtered_splice_sites_file"]),genomeFile,os.path.join(transitionnalOutputPath,config["genome_filtered_splice_sites_file"]))
+	log.tell("Selecting the relevant isoforms")
+	findBestIsoform(os.path.join(transitionnalOutputPath,config["genome_filtered_splice_sites_file"]),os.path.join(transitionnalOutputPath,config["best_filtered_splice_sites_file"]))
+	#Translating to bed format for the final results
+	convertIsoformstoBed(os.path.join(transitionnalOutputPath,config["genome_filtered_splice_sites_file"]),os.path.join(outputPath,config["final_splice_sites_file"]))
+	convertIsoformstoBed(os.path.join(transitionnalOutputPath,config["best_filtered_splice_sites_file"]),os.path.join(outputPath,config["final_unique_splice_sites_file"]))
 	# --> UTR Isoforms
 
 	#End message
@@ -442,31 +448,31 @@ def findSpliceSites(sourceFile, outputFile):
 	splicedTranscirpts.sort(key=lambda transcript: transcript[0])
 
 	#Keep only the transcripts with at least 3
-	isomorphs=[]
-	currentIsomorph=[]
+	isoforms=[]
+	currentIsoform=[]
 	firstline=True
 	lastSpliceSites=None
 	for transcript in splicedTranscirpts:
 		spliceSites = " ".join(transcript[3])
 		if spliceSites == lastSpliceSites:
-			currentIsomorph.append(transcript)
+			currentIsoform.append(transcript)
 		else:
 			if firstline:
 				firstline=False
 			else:
-				#Add the isomorph to the list if there are at least 3 instances of it
-				if len(currentIsomorph) > 2:
-					isomorphs.append(getIsomorph(currentIsomorph))
+				#Add the isoform to the list if there are at least 3 instances of it
+				if len(currentIsoform) > 2:
+					isoforms.append(getIsoform(currentIsoform))
 
-			currentIsomorph=[transcript]
+			currentIsoform=[transcript]
 		lastSpliceSites=spliceSites
 
 
 	with open(outputFile, "w") as outFile:
-		for transcript in isomorphs:
+		for transcript in isoforms:
 			outFile.write("%s\t%i\t%i\t%i\t%s\n"%(transcript[0],transcript[1],transcript[2],transcript[3],"\t".join(transcript[4])))
 
-def getIsomorph(transcripts):
+def getIsoform(transcripts):
 	if len(transcripts)<=0:
 		return["",0,0,0,[]]
 	start=0
@@ -503,8 +509,8 @@ def getSplicedTranscript(exons):
 	end=lastexon[2]
 	return [chr,start,end,spliceSites]
 
-#Filters isomorphs, removing the ones that are not represented enough compared to the coverage
-def filterByCoverage(rawIsomorphFile,coverageFile,filteredIsomorphFile):
+#Filters isoforms, removing the ones that are not represented enough compared to the coverage
+def filterByCoverage(rawIsoformFile,coverageFile,filteredIsoformFile):
 	global config
 
 	coverageMap = {}
@@ -519,8 +525,8 @@ def filterByCoverage(rawIsomorphFile,coverageFile,filteredIsomorphFile):
 			coverageMap[chr].append(int(value))
 
 	#Check the coverage at every splice position
-	with open(rawIsomorphFile,'r') as rawIsomophs:
-		with open(filteredIsomorphFile,'w') as filteredIsomorphs:
+	with open(rawIsoformFile,'r') as rawIsomophs:
+		with open(filteredIsoformFile,'w') as filteredIsoforms:
 			for line in rawIsomophs:
 				parts = line.strip().split("\t")
 				chr=parts[0]
@@ -530,10 +536,10 @@ def filterByCoverage(rawIsomorphFile,coverageFile,filteredIsomorphFile):
 				for spliceSite in spliceSites:
 					valid = valid or coverageMap[chr][int(spliceSite)] / readCount < int(config["max_coverage_to_splice_ratio"])
 				if valid:
-					filteredIsomorphs.write(line)
+					filteredIsoforms.write(line)
 
-#Filters isomorphs, removing the ones that are not represented enough compared to the coverage
-def filterByGenome(rawIsomorphFile,genomeFile,filteredIsomorphFile):
+#Filters isoforms, removing the ones that are not represented enough compared to the coverage
+def filterByGenome(rawIsoformFile,genomeFile,filteredIsoformFile):
 	global config
 
 	genomeMap = {}
@@ -551,8 +557,8 @@ def filterByGenome(rawIsomorphFile,genomeFile,filteredIsomorphFile):
 				genomeMap[currentChr]+=line.strip().upper()
 
 	#Check the genome for poly-A and poly-T content within each exon and delete the exon if it is found
-	with open(rawIsomorphFile,'r') as rawIsomophs:
-		with open(filteredIsomorphFile,'w') as filteredIsomorphs:
+	with open(rawIsoformFile,'r') as rawIsomophs:
+		with open(filteredIsoformFile,'w') as filteredIsoforms:
 			for line in rawIsomophs:
 				parts = line.strip().split("\t")
 				chr=parts[0]
@@ -580,7 +586,7 @@ def filterByGenome(rawIsomorphFile,genomeFile,filteredIsomorphFile):
 					sequence=genomeMap[chr][int(exon[0]):int(exon[1])]
 					polyA="A" * int(config["max_polyA_length"])
 					polyT="T" * int(config["max_polyA_length"])
-					if len(sequence) < int(config["min_exon_length"]) or polyA in sequence or polyT in sequence or sequence.count('A')/len(sequence) > float(config["max_single_base_to_length_ratio"]) or sequence.count('T')/len(sequence) > float(config["max_single_base_to_length_ratio"]):
+					if len(sequence) < int(config["min_exon_length"]) and (polyA in sequence or polyT in sequence or sequence.count('A')/len(sequence) > float(config["max_single_base_to_length_ratio"]) or sequence.count('T')/len(sequence) > float(config["max_single_base_to_length_ratio"])):
 						pass
 					else:
 						if start is None:
@@ -590,7 +596,78 @@ def filterByGenome(rawIsomorphFile,genomeFile,filteredIsomorphFile):
 						spliceSites.append(exon[1])
 				if len(spliceSites) > 2:
 					end=spliceSites.pop()
-					filteredIsomorphs.write("\t".join((chr,start,end,readCount,"\t".join(spliceSites)))+"\n")
+					filteredIsoforms.write("\t".join((chr,start,end,readCount,"\t".join(spliceSites)))+"\n")
+
+#Creates a file containing only the most frequent isomoprhs from a file containing a list of them
+def findBestIsoform(sourceFile, outputFile):
+	global config
+
+	#read the file and compare each line with its neighbours
+	with open(sourceFile, "r") as inFile:
+		with open(outputFile, "w") as outFile:
+			lastline=None
+			isoforms=[]
+			for line in inFile:
+				#Seach for instances sharing approximately the same splice site
+				currentline=line.strip().split("\t")
+				if lastline is not None and (abs(int(lastline[4]) - int(currentline[4])) < int(config["max_splice_difference"]) or abs(int(lastline[5]) - int(currentline[5])) <  int(config["max_splice_difference"])):
+					isoforms.append(currentline)
+				else:
+					#Once a new transcript is hit, write the best isoform of the list to the output file
+					if lastline != None:
+						outFile.write("\t".join(getBest(isoforms))+"\n")
+					#Then reinitialize with the curent line
+					isoforms=[currentline]
+				lastline=currentline
+
+			#Write the output for the last batch of isoforms
+			outFile.write("\t".join(getBest(isoforms))+"\n")
+
+#Returns the best isoform of a list
+def getBest(isoforms):
+	best=None
+	bestScore=0
+	for isoform in (isoforms):
+		score=isoform[3]
+		if best is None or score > bestScore:
+			best=isoform
+			bestScore=score
+	return best
+
+#Writes a bed file from a file containing isoforms
+def convertIsoformstoBed(sourceFile, outputFile):
+	with open(sourceFile, "r") as inFile:
+		with open(outputFile, "w") as outFile:
+			for line in inFile:
+				parts=line.strip().split("\t")
+				chr=parts[0]
+				start=parts[1]
+				end=parts[2]
+				readCount=parts[3]
+				spliceSites=parts[4:]
+				#Translate the splice sites into exons
+				exons=[]
+				exon=[int(start),None]
+				for spliceSite in spliceSites:
+					if exon is None:
+						exon=[int(spliceSite),None]
+					else:
+						exon[1]=int(spliceSite)
+						exons.append(exon)
+						exon=None
+				exon[1]=int(end)
+				exons.append(exon)
+				#Create the blocksizes and blockstarts fields from the exons
+				blockSizes=""
+				blockStarts=""
+				for exon in exons:
+					blockSizes+="%i,"%(exon[1]-exon[0])
+					blockStarts+="%i,"%(exon[0]-int(start))
+				outFile.write("%s\t%s\t%s\t\t500\t.\t%s\t%s\t0\t%s\t%s\t%s\n"%(chr,start,end,start,end,len(exons),blockSizes,blockStarts))
+
+
+
+
 
 
 #Combines two coverage files for the same chromosomes and adds their coverage together
