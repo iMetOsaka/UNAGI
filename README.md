@@ -111,30 +111,88 @@ Runs silently (no console output), cancels verbose.
 More granular configuration can be made through the conf.ini file located in the app folder.
 
 ###Path to Utilities
-minimap_path=./tools/minimap2/minimap2
-samtools_path=./tools/samtools/samtools
-bedtools_path=./tools/bedtools/bin/bedtools
+
+These options are the path to the other programs used by UNAGI to deliver its results.
+They come prepackaged with the pipeline but can be replaced by other versions by changing their path in the conf.ini file.
+```
+minimap_path
+samtools_path
+bedtools_path
+
+```
 
 ###Research options
-strand_forwards_identifier=GGG
-strand_backwards_identifier=TTT
-strand_start_index=24
-strand_end_index=29
-min_coverage_threshold=6
-min_3dash_threshold=10
-min_3dash_peak_separation=30
-min_3dash_end_separation=100
-min_5dash_threshold=10
-min_5dash_peak_separation=30
-min_5dash_start_separation=100
-max_5dash_offset=200
-max_coverage_to_splice_ratio=100
-min_exon_length=100
-max_polyA_length=8
-max_single_base_to_length_ratio=0.7
+
+These options are diverse variables that are used by UNAGI to detect or filter its results.
+They are optimized for our research in wheat but can be tweaked in the conf.ini file to adapt for other types of genomes.
+
+
+**Stranding**
+```
+strand_forwards_identifier
+strand_backwards_identifier
+```
+The sequences used to determine the strand of a read, they will be searched for in the position range determined by strand_start_index and strand_end_index
+
+```
+strand_start_index
+strand_end_index
+```
+The range in which to search for strand_forwards_identifier and strand_backwards_identifier in order to strand the reads
+
+**Transcript Detection**
+```
+min_coverage_threshold
+```
+The amount of coverage that will trigger the detection of a start or end site of a gene when looking for coverage breaks.
+
+```
+min_3dash_threshold
+min_5dash_threshold
+```
+The amount of coverage that will make a 3/ or 5/ site considered as relevant
+
+```
+min_3dash_peak_separation
+min_5dash_peak_separation
+```
+The minimum separation between two 3/ sites or two 5/ sites for them to be considered distinct. If within this distance, the peaks will be clustered together.
+
+```
+min_3dash_end_separation
+min_5dash_start_separation
+```
+The minimum separation between a 3/ site or 5/site with the end or start of a gene (respectively) for it to trigger a cut.  If the 3/ site or 5/ site is too close to its relevant gene end, it will be ignored.
+
+```
+max_5dash_offset
+```
+The minimum distance between a 3/ site cut and its corresponding 5/ site. If a 5/ site is found within this distance, it will be skipped and the next 5/ site will be used instead.
+
+**Splice Isoforms Detection**
+```
+max_coverage_to_splice_ratio
+```
+The minimum ratio to of the total coverage required for an isoform to be considered relevant.
+
+```
+min_exon_length
+max_polyA_length
+max_single_base_to_length_ratio
+```
+When looking for splicing isoforms, exons with a length under min_exon_length will be checked for long polyA or polyT chains. If such an exon has a polyA or polyT chain longer than max_polyA_length, it will be removed. If it is composed of more than max_single_base_to_length_ratio worth of A bases or T bases, it will also be removed.
+
+```
 max_splice_difference=10
+```
+This is used when looking for the best isoform of the same gene. Two isoforms will be considered the same if their splice site either starts or ends within max_splice_difference of each other.
 
 ###Command options
+
+These options are the command line options used when running the tools packaged with UNAGI.
+As changing options can change the output of a command and make it incompatible with the next step, caution is recommended when altering these options.
+
+```
 minimap_options=-ax splice -G 5k --secondary=no
 samtobam_options=view -Sb
 bamtobed_options=bamtobed -i
@@ -144,9 +202,15 @@ sortbam_options=sort
 genomecov_options=genomecov -d
 genomecov3dash_options=genomecov -dz -3
 genomecov5dash_options=genomecov -dz -5
+```
 
 
 ###Transitional output names
+
+These options are the names of the transitional files created throughout a run of the UNAGI pipeline.
+They can be changed freely as it won't impact the run.
+
+```
 stranded_file=stranded.fastq
 raw_mapped_sam_file=raw_mapped.sam
 raw_mapped_bam_file=raw_mapped.bam
@@ -178,8 +242,16 @@ raw_splice_sites_file=raw_splice_sites.txt
 coverage_filtered_splice_sites_file=coverage_filtered_splice_sites.txt
 genome_filtered_splice_sites_file=genome_filtered_splice_sites.txt
 best_filtered_splice_sites_file=best_filtered_splice_sites.txt
+```
 
 ###Final output names
+
+These options are the names of the final output files of the UNAGI pipeline.
+They can be changed freely as it won't impact the run.
+
+```
 full_genelist_file=Full_Genelist.bed
 final_splice_sites_file=Splicing_Isoforms.bed
 final_unique_splice_sites_file=Splicing_Isoforms_Unique.bed
+
+```
