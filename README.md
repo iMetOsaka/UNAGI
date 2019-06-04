@@ -110,7 +110,7 @@ Runs silently (no console output), cancels verbose.
 
 More granular configuration can be made through the conf.ini file located in the app folder.
 
-###Path to Utilities
+##Path to Utilities
 
 These options are the path to the other programs used by UNAGI to deliver its results.
 They come prepackaged with the pipeline but can be replaced by other versions by changing their path in the conf.ini file.
@@ -118,10 +118,9 @@ They come prepackaged with the pipeline but can be replaced by other versions by
 minimap_path
 samtools_path
 bedtools_path
-
 ```
 
-###Research options
+##Research options
 
 These options are diverse variables that are used by UNAGI to detect or filter its results.
 They are optimized for our research in wheat but can be tweaked in the conf.ini file to adapt for other types of genomes.
@@ -187,7 +186,7 @@ max_splice_difference=10
 ```
 This is used when looking for the best isoform of the same gene. Two isoforms will be considered the same if their splice site either starts or ends within max_splice_difference of each other.
 
-###Command options
+##Command options
 
 These options are the command line options used when running the tools packaged with UNAGI.
 As changing options can change the output of a command and make it incompatible with the next step, caution is recommended when altering these options.
@@ -205,7 +204,7 @@ genomecov5dash_options=genomecov -dz -5
 ```
 
 
-###Transitional output names
+##Transitional output names
 
 These options are the names of the transitional files created throughout a run of the UNAGI pipeline.
 They can be changed freely as it won't impact the run.
@@ -244,7 +243,7 @@ genome_filtered_splice_sites_file=genome_filtered_splice_sites.txt
 best_filtered_splice_sites_file=best_filtered_splice_sites.txt
 ```
 
-###Final output names
+##Final output names
 
 These options are the names of the final output files of the UNAGI pipeline.
 They can be changed freely as it won't impact the run.
