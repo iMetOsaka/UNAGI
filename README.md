@@ -69,41 +69,27 @@ cd /path/to/unagi/directory
 # Options
 
 **Required**
-```
--i  *or* --input
-```
+`-i` *or* `--input`
 Input file. This should be the path to a fastq file.
 
-```
--o  *or* --output
-```
+`-o` *or* `--output`
 Output path. This should be the path to output the result files to.
 
-```
--g  *or* --genome
-```
+`-g` *or* `--genome`
 Genome File. This should be a valid genome file for minimap.
 
 **Optional**
-```
--v  *or* --version
-```
+`-v` *or* `--version`
 Displays the program version and exits.
 
-```
--s *or* --stranded
-```
+`-s` *or* `--stranded`
 Stranded. Should be selected if the input file contains reads that are already stranded.
 The input file should then be the fastq file containing the stranded reads
 
-```
--V *or* --verbose
-```
+`-V` *or* `--verbose`
 Verbose. Displays additional information while running.
 
-```
--S  *or* --silent
-```
+`-S` *or* `--silent`
 Runs silently (no console output), cancels verbose.
 
 # Detailed Configuration
