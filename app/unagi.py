@@ -43,9 +43,9 @@ def main(argv):
 	## Arguments check ##
 	#Required
 	#Input
-	inputFile = args.i
+	inputFile = args.input
 	if not os.path.isfile(inputFile):
-		log.tell("The input file %s doesn't exist"%(args.i))
+		log.tell("The input file %s doesn't exist"%(args.input))
 		return
 	#Check the file format
 	try:
@@ -59,7 +59,7 @@ def main(argv):
 		return
 
 	#Output
-	outputPath = args.o
+	outputPath = args.output
 	if not os.path.isdir(outputPath):
 		log.tell("The output directory %s doesn't exist, creating it")
 		os.mkdir(transitionnalOutputPath)
@@ -70,14 +70,14 @@ def main(argv):
 
 
 	#Genome
-	genomeFile = args.g
+	genomeFile = args.genome
 	if not os.path.isfile(genomeFile):
-		log.tell("The genome file %s doesn't exist"%(args.g))
+		log.tell("The genome file %s doesn't exist"%(args.genome))
 		return
 
 	#Optional
 	#If the -s option is selected, the stranded file is the input file. Otherwise, it has to be generated
-	stranding = not args.s
+	stranding = not args.stranded
 	if stranding:
 		strandedFile = os.path.join(transitionnalOutputPath,config["stranded_file"])
 	else:
@@ -85,9 +85,9 @@ def main(argv):
 		strandedFile = inputFile
 
 	#More output should happen if the script runson verbose mode
-	log.verbose = args.v
+	log.verbose = args.verbose
 	#No output should happen if the script runs silently
-	log.silent = args.si
+	log.silent = args.silent
 
 	## UNAGI Pipeline ##
 
