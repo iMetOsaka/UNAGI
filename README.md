@@ -118,7 +118,7 @@ samtools_path
 bedtools_path
 ```
 
-### Research options
+### Advanced options
 
 These options are diverse variables that are used by UNAGI to detect or filter its results.
 They are optimized for our research in wheat but can be tweaked in the conf.ini file to adapt for other types of genomes.
