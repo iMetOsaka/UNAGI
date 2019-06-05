@@ -62,7 +62,7 @@ def main(argv):
 	outputPath = args.output
 	if not os.path.isdir(outputPath):
 		log.tell("The output directory %s doesn't exist, creating it")
-		os.mkdir(transitionnalOutputPath)
+		os.mkdir(outputPath)
 
 	transitionnalOutputPath=os.path.join(outputPath,"transitionnal")
 	if not os.path.isdir(transitionnalOutputPath):
