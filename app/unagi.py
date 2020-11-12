@@ -536,7 +536,6 @@ def filterByCoverage(rawIsoformFile,coverageFile,filteredIsoformFile):
 				spliceSites=parts[4:]
 				valid=False
 				for spliceSite in spliceSites:
-					valid = valid or coverageMap[chr][int(spliceSite)] / readCount < int(config["max_coverage_to_splice_ratio"])
 					valid = valid or (readCount != 0 and coverageMap[chr][int(spliceSite)] / readCount < int(config["max_coverage_to_splice_ratio"]))
 				if valid:
 					filteredIsoforms.write(line)
@@ -589,7 +588,6 @@ def filterByGenome(rawIsoformFile,genomeFile,filteredIsoformFile):
 					sequence=genomeMap[chr][int(exon[0]):int(exon[1])]
 					polyA="A" * int(config["max_polyA_length"])
 					polyT="T" * int(config["max_polyA_length"])
-					if len(sequence) < int(config["min_exon_length"]) and (polyA in sequence or polyT in sequence or sequence.count('A')/len(sequence) > float(config["max_single_base_to_length_ratio"]) or sequence.count('T')/len(sequence) > float(config["max_single_base_to_length_ratio"])):
 					if len(sequence) < int(config["min_exon_length"]) and len(sequence) > 0 and (polyA in sequence or polyT in sequence or sequence.count('A')/len(sequence) > float(config["max_single_base_to_length_ratio"]) or sequence.count('T')/len(sequence) > float(config["max_single_base_to_length_ratio"])):
 						pass
 					else:
@@ -682,7 +680,7 @@ def combineCoverage(positiveCoverageFile,negativeCoverageFile,allCoverageFile):
 				for posline in positive:
 					negline=next(negative)
 					posparts=posline.split("\t")
-					negparts=posline.split("\t")
+					negparts=negline.split("\t")
 					if posparts[0] == negparts[0] and posparts[1] == negparts[1]:
 						total=int(posparts[2])+int(negparts[2])
 						all.write("%s\t%s\t%i\n"%(posparts[0],posparts[1],total))
