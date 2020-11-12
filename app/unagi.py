@@ -295,7 +295,7 @@ def insertDashCuts(sourceFile3, sourceFile5, chromosomeList, outputFile, strand=
 				#First check if we are entering a new chromosome
 				if currentDashSite["chr"] != currentChr:
 					#if so, store the list of sites for the previous chromosome, then empty the list and reset the variables
-					if currentChr is not None:
+					if currentChr is not None and currentCluster != list():
 						currentChrList.append(clusterMean(currentCluster))
 						dashSiteList[currentChr]=list(currentChrList)
 					currentCluster=list()
@@ -309,7 +309,7 @@ def insertDashCuts(sourceFile3, sourceFile5, chromosomeList, outputFile, strand=
 					if lastDashSite is None or int(currentDashSite["position"])-int(lastDashSite["position"]) < int(config["min_"+dash+"dash_peak_separation"]):
 						currentCluster.append(dict(currentDashSite))
 					#If the peak is far enough from the last cluster, register the mean position for the peak and reset the cluster with our new result
-					else:
+				elif currentCluster != list():
 						#The mean position is stored in the current chromosome list
 						currentChrList.append(clusterMean(currentCluster))
 						currentCluster=list()
@@ -318,7 +318,7 @@ def insertDashCuts(sourceFile3, sourceFile5, chromosomeList, outputFile, strand=
 					lastDashSite=dict(currentDashSite)
 
 		#Add the last chromosome list
-		if currentChr is not None:
+		if currentChr is not None and currentCluster != list():
 			currentChrList.append(clusterMean(currentCluster))
 			dashSiteList[currentChr]=list(currentChrList)
 		#The dashSiteList now contains every cut site given by our 3' or 5' file, organized by chomosome name
