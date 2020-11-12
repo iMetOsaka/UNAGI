@@ -379,6 +379,8 @@ def clusterMean(cluster):
 		totalSites = totalSites+int(site["coverage"])
 		totalPosition = totalPosition+(int(site["position"])*int(site["coverage"]))
 
+	if totalSites == 0:
+		return 0
 	return int(round(totalPosition/totalSites))
 
 #Combines two chromosomes list together respecting the ordering
@@ -535,6 +537,7 @@ def filterByCoverage(rawIsoformFile,coverageFile,filteredIsoformFile):
 				valid=False
 				for spliceSite in spliceSites:
 					valid = valid or coverageMap[chr][int(spliceSite)] / readCount < int(config["max_coverage_to_splice_ratio"])
+					valid = valid or (readCount != 0 and coverageMap[chr][int(spliceSite)] / readCount < int(config["max_coverage_to_splice_ratio"]))
 				if valid:
 					filteredIsoforms.write(line)
 
@@ -587,6 +590,7 @@ def filterByGenome(rawIsoformFile,genomeFile,filteredIsoformFile):
 					polyA="A" * int(config["max_polyA_length"])
 					polyT="T" * int(config["max_polyA_length"])
 					if len(sequence) < int(config["min_exon_length"]) and (polyA in sequence or polyT in sequence or sequence.count('A')/len(sequence) > float(config["max_single_base_to_length_ratio"]) or sequence.count('T')/len(sequence) > float(config["max_single_base_to_length_ratio"])):
+					if len(sequence) < int(config["min_exon_length"]) and len(sequence) > 0 and (polyA in sequence or polyT in sequence or sequence.count('A')/len(sequence) > float(config["max_single_base_to_length_ratio"]) or sequence.count('T')/len(sequence) > float(config["max_single_base_to_length_ratio"])):
 						pass
 					else:
 						if start is None:
