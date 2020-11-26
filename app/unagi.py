@@ -308,12 +308,12 @@ def insertDashCuts(sourceFile3, sourceFile5, chromosomeList, outputFile, strand=
 					#Peaks within a distance of each other (min_3dash_peak_separation) are clustered together
 					if lastDashSite is None or int(currentDashSite["position"])-int(lastDashSite["position"]) < int(config["min_"+dash+"dash_peak_separation"]):
 						currentCluster.append(dict(currentDashSite))
-					#If the peak is far enough from the last cluster, register the mean position for the peak and reset the cluster with our new result
+				#If the peak is far enough from the last cluster, register the mean position for the peak and reset the cluster with our new result
 				elif currentCluster != list():
-						#The mean position is stored in the current chromosome list
-						currentChrList.append(clusterMean(currentCluster))
-						currentCluster=list()
-						currentCluster.append(dict(currentDashSite))
+					#The mean position is stored in the current chromosome list
+					currentChrList.append(clusterMean(currentCluster))
+					currentCluster=list()
+					currentCluster.append(dict(currentDashSite))
 					#Once the site has been saved, keep it to compare it to the next
 					lastDashSite=dict(currentDashSite)
 
