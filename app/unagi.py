@@ -1,6 +1,6 @@
 """
 	Program: UNAGI Pipeline
-	Version: 1.0
+	Version: 1.0.1
 	Author: Mohamad al Kadi
 	Revision: Nicolas Jung
 	Description: A pipeline finding the genes position from Nanopore reads and the genome they belong to.
@@ -17,7 +17,7 @@ import conf
 #Global options
 log=logger()
 config=conf.getconf()
-version="v1.0"
+version="v1.0.1"
 
 def main(argv):
 	global log
