@@ -1,2 +1,2 @@
 @ECHO OFF
-python %CD%/app/main.py %*
+python %CD%/app/unagi.py %*
