@@ -168,7 +168,7 @@ def main(argv):
 	combineChrLists(positiveChrList,negativeChrList,os.path.join(outputPath,config["full_genelist_file"]))
 
 	#Finding splicing isoforms
-	log.tell("Finding splincing isoforms")
+	log.tell("Finding splicing isoforms")
 	findSpliceSites(os.path.join(transitionnalOutputPath,config["raw_sorted_split_bed_file"]),os.path.join(transitionnalOutputPath,config["raw_splice_sites_file"]))
 	filterByCoverage(os.path.join(transitionnalOutputPath,config["raw_splice_sites_file"]),os.path.join(transitionnalOutputPath,config["total_coverage_file"]),os.path.join(transitionnalOutputPath,config["coverage_filtered_splice_sites_file"]))
 	filterByGenome(os.path.join(transitionnalOutputPath,config["coverage_filtered_splice_sites_file"]),genomeFile,os.path.join(transitionnalOutputPath,config["genome_filtered_splice_sites_file"]))
