@@ -336,24 +336,25 @@ def insertDashCuts(sourceFile3, sourceFile5, chromosomeList, outputFile, strand=
 		#Compare each cut site with each gene site
 		newGeneList=list()
 		for gene in geneList:
-
-			for cut3 in dashSiteList3[chr]:
-				#If the 3 dash cut is within the start and end of a gene and separated enough from the end of it,
-				#cut the gene accordingly and look for a 5' site to start the next gene
-				if gene["start"] < cut3 < gene["end"]:
-					# if dash == "3" and gene["end"]-cut > int(config["min_3dash_end_separation"]):
-					if gene["end"]-cut3 > int(config["min_3dash_end_separation"]):
-						#Create a new gene ending at the corresponding 3' position
-						newGeneList.append({"start":gene["start"],"end":cut3,"strand":strand})
-						geneNumber = geneNumber+1
-						gene["start"]=cut3
-						#Look for a 5' site to start the next gene
-						for cut5 in dashSiteList5[chr]:
-							#The 5' site must be between a reasonable length from the 3' cut and the end of the gene
-							if cut3-int(config["max_5dash_offset"]) < cut5 <gene["end"]:
-								#Reduce the current gene to start at the 5' just found
-								gene["start"]=cut5
-								break
+			if chr in dashSiteList3.keys():
+				for cut3 in dashSiteList3[chr]:
+					#If the 3 dash cut is within the start and end of a gene and separated enough from the end of it,
+					#cut the gene accordingly and look for a 5' site to start the next gene
+					if gene["start"] < cut3 < gene["end"]:
+						# if dash == "3" and gene["end"]-cut > int(config["min_3dash_end_separation"]):
+						if gene["end"]-cut3 > int(config["min_3dash_end_separation"]):
+							#Create a new gene ending at the corresponding 3' position
+							newGeneList.append({"start":gene["start"],"end":cut3,"strand":strand})
+							geneNumber = geneNumber+1
+							gene["start"]=cut3
+							#Look for a 5' site to start the next gene
+							if chr in dashSiteList5.keys():
+								for cut5 in dashSiteList5[chr]:
+									#The 5' site must be between a reasonable length from the 3' cut and the end of the gene
+									if cut3-int(config["max_5dash_offset"]) < cut5 <gene["end"]:
+										#Reduce the current gene to start at the 5' just found
+										gene["start"]=cut5
+										break
 
 			#The renaining gene i added to the list at the end
 			newGeneList.append(gene)
