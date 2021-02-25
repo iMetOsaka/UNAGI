@@ -102,7 +102,7 @@ def main(argv):
 		strandedRecords = findStrands(inputRecords)
 		#Writing the stranded reads to a fastq file
 		with gzip.open(strandedFile, "wb") as strandedGzFile:
-            SeqIO.write(strandedRecords, strandedGzFile, "fastq")
+			SeqIO.write(strandedRecords, strandedGzFile, "fastq")
 		log.tell("A total of %i records out of %i (%i%%) were successfully stranded"%(len(strandedRecords), len(inputRecords), round(len(strandedRecords)*100/len(inputRecords))))
 
 	#Clearing memory of huge variables:
