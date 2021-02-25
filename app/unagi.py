@@ -7,7 +7,7 @@
 """
 
 #Native imports
-import sys, os, argparse, subprocess
+import sys, os, argparse, subprocess, gzip
 #Installed imports
 from Bio import SeqIO
 #Additional imports
@@ -52,10 +52,15 @@ def main(argv):
 		log.tell("Reading the input file")
 		inputRecords = list(SeqIO.parse(inputFile, "fastq"))
 	except ValueError:
-		log.tell("The input file must be in the fastq format.")
-		return
+		try:
+			with gzip.open(inputFile, "rt") as inputArchive:
+				inputRecords = list(SeqIO.parse(inputArchive, "fastq"))
+		except ValueError:
+			log.tell("The input file must be in the fastq or fastq.gz format.")
+			return
+
 	if len(inputRecords) == 0:
-		log.tell("The input file must be in the fastq format.")
+		log.tell("The input file must be in the fastq or fastq.gz format.")
 		return
 
 	#Output
@@ -99,7 +104,7 @@ def main(argv):
 		SeqIO.write(strandedRecords, strandedFile, "fastq")
 		log.tell("A total of %i records out of %i (%i%%) were successfully stranded"%(len(strandedRecords), len(inputRecords), round(len(strandedRecords)*100/len(inputRecords))))
 
-	#Cleaing memory of huge variables:
+	#Clearing memory of huge variables:
 	inputRecords=None
 	del inputRecords
 	strandedRecords=None
