@@ -8,4 +8,4 @@ cd `dirname ${DIRPATH}` > /dev/null
 DIRPATH=`pwd`;
 popd  > /dev/null
 #DIRPATH=$(dirname $(readlink -f $0))
-python $DIRPATH/app/unagi.py $*
+python3 $DIRPATH/app/unagi.py $*
