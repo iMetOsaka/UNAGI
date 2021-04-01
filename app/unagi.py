@@ -684,13 +684,35 @@ def combineCoverage(positiveCoverageFile,negativeCoverageFile,allCoverageFile):
 	with open(positiveCoverageFile, "r") as positive:
 		with open(negativeCoverageFile, "r") as negative:
 			with open(allCoverageFile, "w") as all:
+				totalCoverage={}
+				#Count all coverage in the positive file and organize it in memory
 				for posline in positive:
-					negline=next(negative)
 					posparts=posline.split("\t")
+					if posparts[0] in totalCoverage.keys():
+						if posparts[1] in totalCoverage[posparts[0]].keys():
+							totalCoverage[posparts[0]][posparts[1]] += int(posparts[2])
+						else:
+							totalCoverage[posparts[0]][posparts[1]] = int(posparts[2])
+					else:
+						totalCoverage[posparts[0]] = {}
+						totalCoverage[posparts[0]][posparts[1]] = int(posparts[2])
+
+				#Add up all coverage in the negative file
+				for negline in negative:
 					negparts=negline.split("\t")
-					if posparts[0] == negparts[0] and posparts[1] == negparts[1]:
-						total=int(posparts[2])+int(negparts[2])
-						all.write("%s\t%s\t%i\n"%(posparts[0],posparts[1],total))
+					if negparts[0] in totalCoverage.keys():
+						if negparts[1] in totalCoverage[negparts[0]].keys():
+							totalCoverage[negparts[0]][negparts[1]] += int(negparts[2])
+						else:
+							totalCoverage[negparts[0]][negparts[1]] = int(negparts[2])
+					else:
+						totalCoverage[negparts[0]] = {}
+						totalCoverage[negparts[0]][negparts[1]] = int(negparts[2])
+
+				#Write the total coverage in the shared file
+				for chr in totalCoverage:
+					for position in totalCoverage[chr]:
+						all.write("%s\t%s\t%i\n"%(chr,position,totalCoverage[chr][position]))
 
 
 
