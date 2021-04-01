@@ -782,7 +782,7 @@ def sortBam(sourceFile, outputFile):
 def genomecov(sourceFile, genomeFile, outputFile):
 	global config
 	global log
-	command=config["bedtools_path"]+" "+config["genomecov_options"]+" -ibam "+sourceFile+" -g "+genomeFile+" > "+outputFile
+	command=config["bedtools_path"]+" "+config["genomecov_options"]+" -ibam "+sourceFile+" > "+outputFile
 	log.write("Running bedtools with the following command: "+command)
 	process = subprocess.Popen(command, shell=True)
 	process.wait()
