@@ -399,19 +399,27 @@ def combineChrLists(chrList1, chrList2, outputFile):
 		for gene in geneList1:
 			#chrList2[chr][0]["start"] is the start position of the first gene left in chrList2 for the current chromosome
 			#While there are genes in chrList2 that start before the current gene, add them to the mergedGeneList and remove them from chrList2
-			while len(chrList2[chr]) > 0 and chrList2[chr][0]["start"] < gene["start"]:
-				mergedGeneList.append(chrList2[chr].pop(0))
+			if chr in chrList2:
+				while len(chrList2[chr]) > 0 and chrList2[chr][0]["start"] < gene["start"]:
+					mergedGeneList.append(chrList2[chr].pop(0))
+					geneNumber = geneNumber+1
+				#When no genes are left that start before the current one, add it to the mergedGeneList
+				mergedGeneList.append(gene)
 				geneNumber = geneNumber+1
-			#When no genes are left that start before the current one, add it to the mergedGeneList
-			mergedGeneList.append(gene)
-			geneNumber = geneNumber+1
 		#When all genes from the current chromosome have been added for chrList1, add any remaining genes from chrList2 to the mergedGeneList
-		for gene in chrList2[chr]:
-			mergedGeneList.append(gene)
-			geneNumber = geneNumber+1
+		if chr in chrList2:
+			for gene in chrList2[chr]:
+				mergedGeneList.append(gene)
+				geneNumber = geneNumber+1
+			#Then remove that chromosome from the list for the next step
+			chrList2.pop(chr, None)
 
 		#Finaly, add the mergedGeneList to the mergedChrList
 		mergedChrList[chr]=mergedGeneList
+
+	#Add the remaining genes from chromosomes that were not in chrList1
+	for chr, geneList2 in chrList2.items():
+		mergedChrList[chr]=geneList2
 
 	#The mergedChrList should now contain every gene for every chromosome sorted by chromosome and position
 
