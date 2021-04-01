@@ -637,8 +637,9 @@ def findBestIsoform(sourceFile, outputFile):
 					isoforms=[currentline]
 				lastline=currentline
 
-			#Write the output for the last batch of isoforms
-			outFile.write("\t".join(getBest(isoforms))+"\n")
+			#Write the output for the last batch of isoforms if any
+			if len(isoforms) > 0:
+				outFile.write("\t".join(getBest(isoforms))+"\n")
 
 #Returns the best isoform of a list
 def getBest(isoforms):
